@@ -23,37 +23,10 @@ class PeopleViewController: UIViewController {
     peopleTableView.delegate = self
     peopleTableView.dataSource = self
     peopleSearchBar.delegate = self
-    self.people = fetchPeople(nil)
+    self.people = PersonAPI.fetchPeople(nil)
     // Do any additional setup after loading the view.
   }
-  
-  private func fetchPeople(_ keyword:String?) -> [User] {
-    var people = [User]()
-    if keyword == "" || keyword == nil {
-      PersonAPI.getPeople{ (data, error) in
-        if let error = error {
-          print(error)
-        }
-        if let data = data {
-          people = data
-        }
-        
-      }
-    } else {
-      PersonAPI.getPeople{ (data, error) in
-        if let error = error {
-          print(error)
-        }
-        if let data = data {
-          people = data.filter{$0.name.first.lowercased().contains(keyword!.lowercased())}
-        }
-      }
-    }
-    return people
-  }
 }
-
-
 
 extension PeopleViewController : UITableViewDelegate {
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -83,7 +56,7 @@ extension PeopleViewController: UITableViewDataSource {
 extension PeopleViewController: UISearchBarDelegate {
   func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
     guard let text = searchBar.text else { return }
-    people = fetchPeople(text)
+    people = PersonAPI.fetchPeople(text)
   }
   
 }

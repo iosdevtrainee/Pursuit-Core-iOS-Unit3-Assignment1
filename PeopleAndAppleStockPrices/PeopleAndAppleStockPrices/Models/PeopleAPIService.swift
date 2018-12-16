@@ -9,7 +9,7 @@
 import Foundation
 
 struct PersonAPI {
-  static func getPeople(completion:@escaping ([User]?,APIError?) -> Void){
+  public static func getPeople(completion:@escaping ([User]?,APIError?) -> Void){
     guard let path = Bundle.main.path(
       forResource: "userinfo", ofType: "json") else {
         completion(nil, .urlException("Incorrect Filename"))
@@ -25,4 +25,32 @@ struct PersonAPI {
       completion(nil, .decodingException(error))
     }
   }
+  public static func fetchPeople(_ keyword:String?) -> [User] {
+    var people = [User]()
+    if keyword == "" || keyword == nil {
+      PersonAPI.getPeople{ (data, error) in
+        if let error = error {
+          print(error)
+        }
+        if let data = data {
+          people = data
+        }
+      }
+      
+    } else {
+      
+      PersonAPI.getPeople{ (data, error) in
+        if let error = error {
+          print(error)
+        }
+        if let data = data {
+          people = data.filter{$0.name.first.lowercased().contains(keyword!.lowercased())}
+        }
+      }
+      
+    }
+    
+    return people
+  }
+  
 }

@@ -23,8 +23,8 @@ class StockDetailController: UIViewController {
         view.backgroundColor = .red
         stockImageView.image = UIImage(named: "thumbsDown")
       }
-      stockOpenLabel.text = "\(stockInfo.open)"
-      stockCloseLabel.text = "\(stockInfo.close)"
+      stockOpenLabel.text = String(format: "%.2f", stockInfo.open)
+      stockCloseLabel.text = String(format: "%.2f", stockInfo.close)
         // Do any additional setup after loading the view.
     }
     
