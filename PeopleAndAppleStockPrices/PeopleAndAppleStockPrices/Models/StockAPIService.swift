@@ -24,4 +24,16 @@ struct StockPriceAPI {
       completion(nil, .decodingException(error))
     }
   }
+  public static func fetchStocks() -> [Stock] {
+    var stocks = [Stock]()
+    StockPriceAPI.getPrices{ (data, error) in
+      if let error = error {
+        print(error)
+      }
+      if let data = data {
+        stocks = data
+      }
+    }
+    return stocks
+  }
 }

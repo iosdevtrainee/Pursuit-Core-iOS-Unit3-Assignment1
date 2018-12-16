@@ -17,77 +17,26 @@ class StockPricesController: UIViewController {
         super.viewDidLoad()
         stockTableView.dataSource = self
         stockTableView.delegate = self
-        stocks = fetchStocks()
-        data = formatData(stocks: stocks)
-        keys = data.keys.sorted {sortStringDates($0, $1) }
-//        keys = keys.sorted() {sortStringDates($0, $1) }
-      print(keys)
+        setupData()
+      }
         // Do any additional setup after loading the view.
-      
+  
+  private func setupData() {
+    stocks = StockPriceAPI.fetchStocks()
+    data = formatData(stocks: stocks)
+    keys = data.keys.sorted {(first, second) in
+    let firstDate = first.components(separatedBy:" ")
+    let secondDate = second.components(separatedBy: " ")
+    return (firstDate[0],firstDate[1]) <  (secondDate[0], secondDate[1])
     }
-  private func sortStringDates(_ firstDateString:String,
-                               _ secondDateString:String) -> Bool {
-    let firstDateComponenets = firstDateString.components(separatedBy: " - ")
-    let secondDateComponenets = secondDateString.components(separatedBy: " - ")
-    let firstDateMonth = firstDateComponenets[0]
-    let secondDateMonth = secondDateComponenets[0]
-    let firstDateYear = firstDateComponenets[1]
-    let secondDateYear = secondDateComponenets[1]
-      return (firstDateYear,firstDateMonth) < (secondDateYear, secondDateMonth)
-    }
+  }
+
 
   private func formatData(stocks:[Stock]) -> [String:[Stock]]{
     return Dictionary(grouping: stocks) {(element:Stock) in
-      let dateElements = element.date.components(separatedBy: "-")
-      return "\(dateElements[1]) - \(dateElements[0])"
+      return "\(element.year) \(element.month)"
     }
   }
-  
-//  private func monthStringToMonth(_ monthStr:String) -> String{
-//    switch monthStr {
-//    case "01":
-//      return "January"
-//    case "02":
-//      return "February"
-//    case "03":
-//      return "March"
-//    case "04":
-//      return "April"
-//    case "05":
-//      return "May"
-//    case "06":
-//      return "June"
-//    case "07":
-//      return "July"
-//    case "08":
-//      return "August"
-//    case "09":
-//      return "September"
-//    case "10":
-//      return "October"
-//    case "11":
-//      return "November"
-//    case "12":
-//      return "December"
-//    default:
-//      return ""
-//    }
-//  }
-  
-  private func fetchStocks() -> [Stock] {
-    var stocks = [Stock]()
-    StockPriceAPI.getPrices{ (data, error) in
-      if let error = error {
-        print(error)
-      }
-      if let data = data {
-        stocks = data
-      }
-    }
-    return stocks
-  }
-    
-
     /*
     // MARK: - Navigation
 
@@ -107,24 +56,26 @@ extension StockPricesController: UITableViewDataSource {
       let stocks = data[keyForRowAt] else { return UITableViewCell() }
     let stock = stocks[indexPath.row]
     cell.dateLabel.text = stock.date
-    cell.OpenPriceLabel.text = String.init(format: "\(stock.close)", "%.2f")
-    
+    cell.OpenPriceLabel.text = String(format: "%.2f", stock.close)
     return cell
   }
   
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return (data[keys[section]]?.count)!
+    let stockDate = keys[section]
+    guard let stocks = data[stockDate] else { return 0 }
+    return stocks.count
   }
   func numberOfSections(in tableView: UITableView) -> Int {
     return keys.count
   }
   func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-    var date = keys[section].components(separatedBy: " - ")
-//    date[0] = monthStringToMonth(date[0])
-    guard let totalStockArray = data[keys[section]] else { return ""}
-    let allPrices = totalStockArray.map {$0.close}
+    let key = keys[section]
+    guard let stocks = data[key],
+      let date = stocks.first?.formattedDate else { return ""}
+    let allPrices = stocks.map {$0.close}
     let avg = allPrices.reduce(0, +) / Double(allPrices.count)
-    return date.joined(separator: " - ") + " Average: \(avg)"
+    let avgString = String(format: " %.2f", avg)
+    return "\(date) Average: \(avgString)"
   }
 }
 
